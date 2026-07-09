@@ -8,6 +8,7 @@ public class ATM{
     private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     private AccountManager accountManager;
     private boolean running ;
+    private boolean menuRunning;
 
     public ATM(ArrayList<Account> accounts, AccountManager accountManager){
         accountList = accounts;
@@ -32,14 +33,7 @@ public class ATM{
         System.out.println("Enter the number of the account ");
         int accountNumber =Integer.parseInt(in.readLine());
 
-        Account foundAccount = null ;
-
-        for (Account ac : accountList){
-            if (ac.hasAccountNumber(accountNumber)){
-                foundAccount =ac;
-                break;
-            }
-        }
+        Account foundAccount = findAccount(accountNumber);
 
         if (foundAccount != null){
         while(attempts<3){
@@ -70,9 +64,9 @@ public class ATM{
 
     public void showMenu() throws Exception{
 
-        boolean flag = true;
+        menuRunning= true;
 
-        while(flag){
+        while(menuRunning){
         
             System.out.println("Choose a number for your option");
             System.out.println("-------------------------");
@@ -81,36 +75,28 @@ public class ATM{
             System.out.println("3.Transfer money ");
             System.out.println("4. Account information ");
             System.out.println("5. Transaction history ");
-            System.out.println("6. Exit ");
+            System.out.println("6. Logout ");
+            System.out.println("7. Exit ATM ");
 
 
             String option = in.readLine();
 
             switch (option) {
                 case "1":
-                    System.out.println("Enter the amount of money you want to withdraw");
-                    Double with_amount = Double.parseDouble(in.readLine());
-                    withdrawMoney(with_amount);
+                    handleWithdrawal();
                     break;
             
                 case "2":
-                    System.out.println("Enter the amount of money you want to deposit");
-                    Double depo_amount = Double.parseDouble(in.readLine());
-                    depositMoney(depo_amount);
+                    handleDeposit();
                     break;
                 
                 case "3":
-                    System.out.println("Enter the account number you want to transfer money to");
-                    int transfer_account_number = Integer.parseInt(in.readLine());
-                    System.out.println("Enter the amount of money you want to transfer");
-                    Double transfer_amount = Double.parseDouble(in.readLine());
-                    transferMoney(transfer_account_number, transfer_amount, accountList);
+                    handleTransfer();
                     break;
+                    
 
                 case "4":
-                    System.out.println("Account number: " + currentAccount.getAccountNumber());
-                    System.out.println("Owner name: " + currentAccount.getOwnerName());
-                    System.out.println("Balance: " + currentAccount.getBalance());
+                    showAccountInfo();
                     break;
                      
 
@@ -119,11 +105,11 @@ public class ATM{
                     break;
 
                 case "6":
-                    System.out.println("Exiting the ATM. Thank you for using our services.");
-                    accountManager.saveAccounts(accountList);
-                    running = false;
-                    flag = false;
-                    currentAccount = null;
+                    logout();
+                    break;
+
+                case "7":
+                    exitATM();
                     break;
 
                 default:
@@ -134,32 +120,86 @@ public class ATM{
         
     }
 
+    private double readDoubleInput() throws Exception {
+        while (true) {
+            try {
+                return Double.parseDouble(in.readLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+    }
+
+    public void handleWithdrawal() throws Exception {
+        System.out.println("Enter the amount of money you want to withdraw");
+        Double with_amount = readDoubleInput();
+        withdrawMoney(with_amount);
+
+    }
+
+    public void handleDeposit() throws Exception {
+        System.out.println("Enter the amount of money you want to deposit");
+        Double depo_amount = readDoubleInput();
+        depositMoney(depo_amount);
+
+    }
+
+    public void handleTransfer() throws Exception{
+        System.out.println("Enter the account number you want to transfer money to");
+        int transfer_account_number = Integer.parseInt(in.readLine());
+
+        Account targetAccount = findAccount(transfer_account_number);
+
+
+        if(targetAccount != null){
+            System.out.println("Enter the amount of money you want to transfer");
+            Double transfer_amount = readDoubleInput();
+            currentAccount.transfer(transfer_amount, targetAccount);
+                    
+
+        }else{
+            System.out.println("There is no account with this number");
+        }
+
+    }
+
+    public void showAccountInfo(){
+        System.out.println("Account number: " + currentAccount.getAccountNumber());
+        System.out.println("Owner name: " + currentAccount.getOwnerName());
+        System.out.println("Balance: " + currentAccount.getBalance());
+        
+    }
+
+    
+
     public void transactionHistory() {
         currentAccount.showTransactionHistory();
     }
 
-    public void transferMoney(int accountNumber, double amount, ArrayList<Account> accounts){
-        Account targetAccount = null;
-        for (Account ac : accounts){
+    public Account findAccount(int accountNumber) {
+        for (Account ac : accountList){
             if (ac.hasAccountNumber(accountNumber)){
-                targetAccount = ac;
-                break;
+                return ac;
             }
         }
+        return null;
 
-        if (targetAccount != null){
-            if(currentAccount.getBalance() >= amount && amount > 0){
-                currentAccount.withdraw(amount);
-                targetAccount.deposit(amount);
-                System.out.println("Transfer successful.");
-            } else {
-                System.out.println("Insufficient funds or invalid amount.");
-            }
-        } else {
-            System.out.println("Target account not found.");
-        }
     }
-     
+
+    public void logout(){
+        System.out.println("Logging out...");
+        menuRunning = false;
+        currentAccount = null;
+    }
+
+    public void exitATM(){
+        System.out.println("Exiting the ATM. Thank you for using our services.");
+        accountManager.saveAccounts(accountList);
+        accountManager.saveTransactions(accountList);
+        running = false;
+        menuRunning = false;
+        currentAccount = null;
+    }
 
 
     public void withdrawMoney(double amount){

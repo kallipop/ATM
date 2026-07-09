@@ -40,5 +40,44 @@ public class AccountManager {
         }
     }
 
+    public void loadTransactions(ArrayList<Account> accounts) {
+        File file = new File("transactions.txt");
+        
+        try (Scanner myReader = new Scanner(file)){
+            while (myReader.hasNextLine()){
+                String data = myReader.nextLine();
+                String[] parts = data.split(",");
+                int accountNumber = Integer.parseInt(parts[0]);
+                String type = parts[1];
+                double amount = Double.parseDouble(parts[2]);
+                String date = parts[3];
+
+               for (Account ac : accounts){
+                    if (ac.hasAccountNumber(accountNumber)){
+                        ac.addTransaction(type,amount,date);
+                        break;
+                    }
+                }
+            }
+        }catch(FileNotFoundException e){
+            System.out.println("An error occurred while loading transactions: " + e.getMessage());
+        }
+    }
+
+    public void saveTransactions(ArrayList<Account> accounts) {
+        try{
+            FileWriter myWriter = new FileWriter("transactions.txt");
+            for (Account ac : accounts) {
+                for (Transaction transaction : ac.getTransactions()) {
+                myWriter.write(transaction.getAccountNumber() + "," + transaction.getType() + "," + transaction.getAmount() + "," + transaction.getDate() + "\n");
+            }}
+            myWriter.close();
+            System.out.println("Transactions saved successfully.");
+        
+        }catch(Exception e){
+            System.out.println("An error occurred while saving transactions: " + e.getMessage());
+        }
+    }
+
     
 }

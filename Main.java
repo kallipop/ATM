@@ -8,6 +8,7 @@ public class Main {
 
        AccountManager accountManager = new AccountManager();
          accounts = accountManager.loadAccounts();
+         accountManager.loadTransactions(accounts);
 
         try{
            ATM atm = new ATM(accounts,accountManager);

@@ -1,4 +1,4 @@
-David Thomas,111,111,10
-Olivia Smith,222,222,1000000
-Lily Allen,333,333,700
-Michael Brown,555,555,9000
+David Thomas,111,111,19.0
+Olivia Smith,222,222,1001562.0
+Lily Allen,333,333,700.0
+Michael Brown,555,555,9000.0
