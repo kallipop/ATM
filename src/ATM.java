@@ -33,7 +33,7 @@ public class ATM{
         System.out.println("Enter the number of the account ");
         int accountNumber =Integer.parseInt(in.readLine());
 
-        Account foundAccount = findAccount(accountNumber);
+        Account foundAccount = accountManager.findAccount(accountNumber);
 
         if (foundAccount != null){
         while(attempts<3){
@@ -60,6 +60,16 @@ public class ATM{
 
 
 
+    }
+
+    public Account accountLogin(int accountNumber, int pin) {
+        for (Account ac : accountList) {
+            if (ac.hasAccountNumber(accountNumber) && ac.hasPIN(pin)) {
+                currentAccount = ac;
+                return currentAccount;
+            }
+        }
+        return null;
     }
 
     public void showMenu() throws Exception{
@@ -148,7 +158,7 @@ public class ATM{
         System.out.println("Enter the account number you want to transfer money to");
         int transfer_account_number = Integer.parseInt(in.readLine());
 
-        Account targetAccount = findAccount(transfer_account_number);
+        Account targetAccount = accountManager.findAccount(transfer_account_number);
 
 
         if(targetAccount != null){
@@ -176,15 +186,6 @@ public class ATM{
         currentAccount.showTransactionHistory();
     }
 
-    public Account findAccount(int accountNumber) {
-        for (Account ac : accountList){
-            if (ac.hasAccountNumber(accountNumber)){
-                return ac;
-            }
-        }
-        return null;
-
-    }
 
     public void logout(){
         System.out.println("Logging out...");

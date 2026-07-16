@@ -10,6 +10,10 @@ public class AccountManager {
         accountList = new ArrayList<>();
     }
 
+    public ArrayList<Account> getAccountList() {
+        return accountList;
+    }
+
     public ArrayList<Account> loadAccounts() {
 
         File file = new File("accounts.txt");
@@ -26,10 +30,10 @@ public class AccountManager {
         return accountList;
     }
 
-    public void saveAccounts(ArrayList<Account> accounts) {
+    public void saveAccounts() {
         try{
             FileWriter myWriter = new FileWriter("accounts.txt");
-            for (Account account : accounts) {
+            for (Account account : accountList) {
                 myWriter.write(account.getOwnerName() + "," + account.getAccountNumber() + "," + account.getPIN() + "," + account.getBalance() + "\n");
             }
             myWriter.close();
@@ -64,10 +68,10 @@ public class AccountManager {
         }
     }
 
-    public void saveTransactions(ArrayList<Account> accounts) {
+    public void saveTransactions() {
         try{
             FileWriter myWriter = new FileWriter("transactions.txt");
-            for (Account ac : accounts) {
+            for (Account ac : accountList) {
                 for (Transaction transaction : ac.getTransactions()) {
                 myWriter.write(transaction.getAccountNumber() + "," + transaction.getType() + "," + transaction.getAmount() + "," + transaction.getDate() + "\n");
             }}
@@ -78,6 +82,18 @@ public class AccountManager {
             System.out.println("An error occurred while saving transactions: " + e.getMessage());
         }
     }
+
+    
+    public Account findAccount(int accountNumber) {
+        for (Account ac : accountList){
+            if (ac.hasAccountNumber(accountNumber)){
+                return ac;
+            }
+        }
+        return null;
+
+    }
+    
 
     
 }

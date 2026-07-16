@@ -24,6 +24,10 @@ public class Account {
         return PIN;
     }
 
+    public void changePIN(int newPIN){
+        PIN=newPIN;
+    }
+
 
     public int getAccountNumber(){
         return accountNumber;
