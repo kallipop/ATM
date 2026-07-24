@@ -1,9 +1,11 @@
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import java.util.*;
 
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.animation.FadeTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;public class ATMFrame{
@@ -36,7 +38,7 @@ import javafx.scene.Scene;public class ATMFrame{
         layout.requestFocus();
     }
 
-    public void showError(String message){
+   public void showError(String message){
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
         alert.show();
@@ -49,10 +51,21 @@ import javafx.scene.Scene;public class ATMFrame{
     private void showMainMenu(){
         layout.getChildren().clear();
 
-        Label welcome = new Label("Welcome, " + currentAccount.getOwnerName());
+        Label welcome = new Label("Welcome back, " + currentAccount.getOwnerName());
 
-        Label balanceLabel = new Label("Balance: €" + String.format("%.2f", currentAccount.getBalance()));
-        balanceLabel.setId("balance");
+        Label balanceTitle = new Label("Current Balance");
+        Label balanceAmount = new Label("€" + String.format("%.2f", currentAccount.getBalance()));
+        balanceAmount.setId("balance");
+
+        VBox baBox = new VBox(10);
+        baBox.setAlignment(Pos.CENTER);
+        baBox.setPrefHeight(100);
+        baBox.setPrefWidth(300);
+        baBox.setMaxWidth(300);
+        baBox.setPadding(new Insets(20));
+        baBox.getStyleClass().add("balance-box");
+
+        baBox.getChildren().addAll(balanceTitle,balanceAmount);
 
         Button infoButton = new Button("Account Information");
         Button withdrawButton = new Button("Withdraw");
@@ -80,8 +93,9 @@ import javafx.scene.Scene;public class ATMFrame{
 
         VBox box = createBox();
 
+       
 
-        box.getChildren().addAll(welcome,balanceLabel,grid);
+        box.getChildren().addAll(welcome,baBox,grid);
 
         layout.getChildren().add(box);
               infoButton.setOnAction(e ->{
@@ -135,6 +149,9 @@ import javafx.scene.Scene;public class ATMFrame{
         Button back = new Button("Back to menu");
         Button confirm = new Button("Confirm");
 
+        Label error = new Label();
+        error.getStyleClass().add("error-label");
+
         back.setOnAction(e ->{
             showMainMenu();
         });
@@ -146,12 +163,12 @@ import javafx.scene.Scene;public class ATMFrame{
                 int confirmPIN = Integer.parseInt(confirmNewPassword.getText());
 
                 if(!currentAccount.hasPIN(oldPIN)){
-                    showError("Wrong current PIN");
+                    error.setText("Wrong current PIN");
                     return;
                 }
 
                 if(newPIN != confirmPIN){
-                    showError("PINs do not match");
+                    error.setText("PINs do not match");
                     return;
                 }
 
@@ -176,7 +193,7 @@ import javafx.scene.Scene;public class ATMFrame{
 
 
             }catch(NumberFormatException ex){
-                showError("Invalid PIN");
+                error.setText("Invalid PIN");
             }
 
         });
@@ -184,7 +201,7 @@ import javafx.scene.Scene;public class ATMFrame{
         VBox box = createBox();
 
 
-        box.getChildren().addAll(oldPassword,newPassword,confirmNewPassword,back,confirm);
+        box.getChildren().addAll(oldPassword,newPassword,confirmNewPassword,error,back,confirm);
        
 
         layout.getChildren().add(box);
@@ -203,27 +220,10 @@ import javafx.scene.Scene;public class ATMFrame{
                 }
 
                 currentAccount.withdraw(money);
+                showTransactionSuccess("Withdrawal completed successfully");
+                
 
-                layout.getChildren().clear();
-                layout.setAlignment(Pos.CENTER);
 
-                Label success = new Label("Withdrawal completed successfully");
-                success.setId("title");
-
-                Label balance = new Label("New balance: €" + String.format("%.2f", currentAccount.getBalance()));
-                balance.setId("balance");
-
-                Button backMenu = new Button("Back to menu");
-
-                backMenu.setOnAction(ev ->{
-                    showMainMenu();
-                });
-
-                VBox box = createSmallBox();
-               
-                box.getChildren().addAll(success,balance,backMenu);
-
-                layout.getChildren().add(box);
     }
 
     public void showFastCashScreen(){
@@ -249,23 +249,23 @@ import javafx.scene.Scene;public class ATMFrame{
         });
 
         twenty.setOnAction(e ->{
-           withdrawAmount(20);
+           showConfirmationScreen("Withdraw €20 ?", () ->{withdrawAmount(20);});
         });
 
         forty.setOnAction(e ->{
-            withdrawAmount(40);
+           showConfirmationScreen("Withdraw €40 ?", () ->{withdrawAmount(40);});
         });
 
         fifty.setOnAction(e ->{
-            withdrawAmount(50);
+           showConfirmationScreen("Withdraw €50 ?", () ->{withdrawAmount(50);});
         });
 
         hundred.setOnAction(e ->{
-            withdrawAmount(100);
+           showConfirmationScreen("Withdraw €100 ?", () ->{withdrawAmount(100);});
         });
 
         twoHundred.setOnAction(e ->{
-            withdrawAmount(200);
+           showConfirmationScreen("Withdraw €200 ?", () ->{withdrawAmount(200);});
         });
 
         other.setOnAction(e ->{
@@ -307,11 +307,14 @@ import javafx.scene.Scene;public class ATMFrame{
         Button confirm = new Button("Confirm");
         Button back = new Button("Back");
 
+        Label error = new Label();
+        error.getStyleClass().add("error-label");
+
         layout.setAlignment(Pos.CENTER);
         VBox box = createBox();
 
 
-        box.getChildren().addAll(title,amountField,confirm,back);
+        box.getChildren().addAll(title,amountField,error,confirm,back);
         layout.getChildren().addAll(box);
 
 
@@ -321,7 +324,7 @@ import javafx.scene.Scene;public class ATMFrame{
 
                 withdrawAmount(money);
             }catch(NumberFormatException ex){
-                showError("Invalid amount entered");
+                error.setText("Invalid amount entered");
             }
         });
         back.setOnAction(e ->{
@@ -343,38 +346,24 @@ import javafx.scene.Scene;public class ATMFrame{
         Button confirm = new Button("Confirm");
         Button back = new Button("Back");
 
+        Label error = new Label();
+        error.getStyleClass().add("error-label");
+
         confirm.setOnAction(e ->{
             try{
                 double money = Double.parseDouble(amountField.getText());
 
                 if(money <=0){
-                    showError("Deposit amount must be positive");
+                    error.setText("Deposit amount must be positive");
                     return;
                 }
 
-                currentAccount.deposit(money);
-                layout.getChildren().clear();
-                layout.setAlignment(Pos.CENTER);
-
-                Label success = new Label("Deposit completed successfully");
-                success.setId("title");
-
-                Label balance = new Label("New balance: €" + String.format("%.2f", currentAccount.getBalance()));
-                balance.setId("balance");
-
-                Button backMenu = new Button("Back to menu");
-
-                backMenu.setOnAction(ev ->{
-                    showMainMenu();
-                });
-
-                VBox box = createSmallBox();
-
-                box.getChildren().addAll(success,balance,backMenu);
-
-                layout.getChildren().add(box);
+                showConfirmationScreen("Deposit €"+ money+ " ?", () ->{currentAccount.deposit(money);
+                showTransactionSuccess("Deposit completed successfully");
+            });
+             
             }catch(NumberFormatException ex){
-                showError("Invalid amount entered");
+                error.setText("Invalid amount entered");
             }
         });
 
@@ -386,9 +375,10 @@ import javafx.scene.Scene;public class ATMFrame{
 
         VBox box = createBox();
 
-        box.getChildren().addAll(title,amountField,confirm,back);
+        box.getChildren().addAll(title,amountField,error,confirm,back);
 
         layout.getChildren().add(box);
+
     }
 
     public void showTransactionHistoryScreen(){
@@ -399,7 +389,9 @@ import javafx.scene.Scene;public class ATMFrame{
 
         VBox historyBox = new VBox(10);
         historyBox.setAlignment(Pos.TOP_LEFT);
+        historyBox.setFillWidth(true);
         ScrollPane scroll = new ScrollPane(historyBox);
+        scroll.setFitToWidth(true);
 
         ArrayList<Transaction> transactions = currentAccount.getTransactions();
 
@@ -408,8 +400,20 @@ import javafx.scene.Scene;public class ATMFrame{
             historyBox.getChildren().add(emptyHistory);
         }else{
             for(Transaction t : transactions){
-                Label transaction = new Label(t.getDate() + "\n" + t.getType()+ ": €"+ String.format("%.2f",t.getAmount())+ "\n-------------------");
-                historyBox.getChildren().add(transaction);
+                VBox tranBox = new VBox(8);
+                tranBox.setPadding(new Insets(15));
+                tranBox.setAlignment(Pos.CENTER);
+                tranBox.setMaxWidth(Double.MAX_VALUE);
+                tranBox.getStyleClass().add("tranBox");
+                Label type = new Label(t.getType());
+                Label amount = new Label("€"+ String.format("%.2f",t.getAmount()));
+                Label date = new Label(t.getDate());
+
+                type.setAlignment(Pos.CENTER);
+                amount.setAlignment(Pos.CENTER);
+                date.setAlignment(Pos.CENTER);
+                tranBox.getChildren().addAll(type,amount,date);
+                historyBox.getChildren().add(tranBox);
             }
         }
 
@@ -436,56 +440,42 @@ import javafx.scene.Scene;public class ATMFrame{
         TextField amountField = new TextField();
         amountField.setPromptText("Amount");
 
+        Label error = new Label();
+        error.getStyleClass().add("error-label");
+
         confirm.setOnAction(e ->{
             try{
                 int targetAccountNumber = Integer.parseInt(accountField.getText());
                 double money = Double.parseDouble(amountField.getText());
 
                 if(money <=0){
-                    showError("Transfer amount must be positive");
+                    error.setText("Transfer amount must be positive");
                     return;
                 }
 
                 Account targetAccount = accountManager.findAccount(targetAccountNumber);
 
                 if(targetAccount ==null){
-                    showError("Target account not found");
+                    error.setText("Target account not found");
                     return;
                 }
 
                 if(targetAccount == currentAccount){
-                    showError("Cannot transfer money to the same account");
+                    error.setText("Cannot transfer money to the same account");
                     return;
                 }
 
                 if(money > currentAccount.getBalance()){
-                    showError("Insufficient funds");
+                    error.setText("Insufficient funds");
                     return;
                 }
 
-                currentAccount.transfer(money, targetAccount);
-                layout.getChildren().clear();
-                layout.setAlignment(Pos.CENTER);
+                showConfirmationScreen("Transfer €"+ money+ " to account " + targetAccountNumber+" ?", () ->{currentAccount.transfer(targetAccountNumber, targetAccount);
 
-                Label success = new Label("Transfer completed successfully");
-                success.setId("title");
-
-                Label balance = new Label("New balance: €" + String.format("%.2f", currentAccount.getBalance()));
-                balance.setId("balance");
-
-                Button backMenu = new Button("Back to menu");
-
-                backMenu.setOnAction(ev ->{
-                    showMainMenu();
+                showTransactionSuccess("Transfer completed successfully");
                 });
-
-                VBox box = createSmallBox();
-
-                box.getChildren().addAll(success,balance,backMenu);
-
-                layout.getChildren().add(box);
             }catch(NumberFormatException ex){
-                showError("Invalid account number or amount");
+                error.setText("Invalid account number or amount");
             }
         });
 
@@ -498,7 +488,7 @@ import javafx.scene.Scene;public class ATMFrame{
         VBox box = createBox();
 
 
-        box.getChildren().addAll(title,accountField,amountField,confirm,back);
+        box.getChildren().addAll(title,accountField,amountField,error,confirm,back);
     
         layout.getChildren().add(box);
     }
@@ -510,6 +500,7 @@ import javafx.scene.Scene;public class ATMFrame{
         Label msg = new Label("Are you sure you want to logout?");
         Button yes = new Button("Yes");
         Button no = new Button("No");
+        
 
         yes.setOnAction(e ->{
         accountManager.saveAccounts();
@@ -565,9 +556,16 @@ import javafx.scene.Scene;public class ATMFrame{
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(50));
         box.setPrefWidth(700);
-        box.setPrefHeight(500);
+        box.setMaxWidth(700);
+        box.setPrefHeight(550);
 
         box.getStyleClass().add("box");
+
+        FadeTransition fade = new FadeTransition(Duration.millis(300),box);
+
+        fade.setFromValue(0);
+        fade.setToValue(1);
+        fade.play();
 
         return box;
     }
@@ -582,5 +580,56 @@ import javafx.scene.Scene;public class ATMFrame{
         box.getStyleClass().add("box");
 
         return box;
+    }
+
+    public void showConfirmationScreen(String message, Runnable action){
+        layout.getChildren().clear();
+        layout.setAlignment(Pos.CENTER);
+
+        Label title = new Label("Confirm transaction");
+        title.setId("title");
+
+        Button yes = new Button("Confirm");
+        Button no = new Button("Cancel");
+
+        Label msg = new Label(message);
+
+        VBox box = createSmallBox();
+        no.setOnAction(e ->{
+            showMainMenu();
+        });
+
+
+        yes.setOnAction(e ->{
+            action.run();
+        });
+
+        box.getChildren().addAll(title,msg,yes,no);
+        layout.getChildren().add(box);
+    }
+
+    public void showTransactionSuccess(String message){
+                layout.getChildren().clear();
+                layout.setAlignment(Pos.CENTER);
+
+                Label success = new Label(message);
+                success.setId("title");
+
+                Label balance = new Label("New balance: €" + String.format("%.2f", currentAccount.getBalance()));
+                balance.setId("balance");
+
+                Button backMenu = new Button("Back to menu");
+
+                backMenu.setOnAction(ev ->{
+                    showMainMenu();
+                });
+
+                VBox box = createSmallBox();
+               
+                box.getChildren().addAll(success,balance,backMenu);
+
+                layout.getChildren().add(box);
+       
+
     }
 }

@@ -1,7 +1,9 @@
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.scene.layout.VBox;
 import javafx.scene.Scene;
+import javafx.scene.image.*;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,6 +30,9 @@ public class LoginFrame {
 
         Button loginButton = new Button("Login");
 
+        Label error = new Label();
+        error.getStyleClass().add("error-label");
+
 
         loginButton.setOnAction(e -> {
             try{
@@ -42,40 +47,44 @@ public class LoginFrame {
                 atmFrame.show();
             } else {
                 attempts --;
-                Alert alert = new Alert(Alert.AlertType.ERROR);
 
                 if (attempts >0){
-                    alert.setContentText("Wrong PIN. \nAttempts remaining: "+ attempts);
+                    error.setText("Wrong PIN. Attempts remaining: "+ attempts);
                 }else{
-                    alert.setContentText("Too many failed attempts.");
+                    error.setText("Too many failed attempts.");
                     loginButton.setDisable(true);
                 }
-                alert.setTitle("Login Failed");
-                alert.show();
             }
         }catch(NumberFormatException ex){
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Account number and PIN must contain only numbers");
-            alert.show();
+            error.setText("Account number and PIN must contain only numbers");
         }
         });
 
+        passwordField.setOnAction(e->{loginButton.fire();});
 
         VBox layout = new VBox();
         layout.setAlignment(Pos.CENTER);
         layout.setPadding(new Insets(30));
-        VBox.setMargin(title, new Insets(-80.,0,30,0));
 
       
-        VBox box = new VBox(25);
+        VBox box = new VBox(20);
         box.setAlignment(Pos.CENTER);
         box.setPadding(new Insets(50));
-        box.setPrefWidth(700);
-        box.setPrefHeight(500);
+        box.setPrefWidth(450);
+        box.setMaxWidth(450);
+        box.setMaxHeight(550);
+        box.setPrefHeight(550);
 
         box.getStyleClass().add("box");
 
-        box.getChildren().addAll(title, accountField, passwordField, loginButton);
+        Image image = new Image(getClass().getResourceAsStream("/resources/atm-machine.png"));
+
+        ImageView icon = new ImageView(image);
+        icon.setFitHeight(70);
+        icon.setFitWidth(70);
+        icon.setPreserveRatio(true);
+
+        box.getChildren().addAll(icon,title, accountField, passwordField,error, loginButton);
 
         layout.getChildren().add(box);
 

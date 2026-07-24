@@ -32,6 +32,7 @@
 .label {
     -fx-font-size: 22px;
     -fx-text-fill: #3d3d3d;
+    -fx-font-weight: bold;
     
     
 }
@@ -41,7 +42,7 @@
     -fx-font-weight: bold;
 
     -fx-text-fill:  #7a3e4d;
-    -fx-effect: dropshadow(gaussian,#555555,5,0.3,2,2);
+    -fx-effect: dropshadow(gaussian,#444444,5,0.3,2,2);
     
 }
 
@@ -62,7 +63,29 @@
     -fx-effect: dropshadow(gaussian, #444444, 20,0.3,0,8);
 }
 
+.tranBox{
+    -fx-background-color: rgb(240, 228, 228);
+    -fx-background-radius: 15;
 
+    -fx-padding :15;
+
+    -fx-effect: dropshadow(gaussian, #444444, 20,0.3,0,8);
+
+}
+
+.balance-box{
+
+    -fx-background-color: #efdfe1;
+    -fx-background-radius: 25;
+    -fx-border-radius:25;
+    
+
+}
+
+.error-label{
+    -fx-text-fill: #de4843;
+    -fx-font-size: 14px;
+}
 
 .text-field {
     -fx-font-size: 16px;
